@@ -1,0 +1,4 @@
+env/
+chroma/
+data
+.DS_Store
