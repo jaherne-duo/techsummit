@@ -8,6 +8,9 @@ from langchain_community.chat_models import ChatOpenAI # Import OpenAI LLM
 import os # Importing os module for operating system functionalities
 import shutil # Importing shutil module for high-level file operations
 
+# docker run -d -v ollama:/root/.ollama -p 11434:11434 --name ollama ollama/ollama
+# docker exec -it ollama ollama run llama3.1
+
 # Directory to your pdf files:
 DATA_PATH = "data/"
 def load_documents():
