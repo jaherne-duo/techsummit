@@ -16,4 +16,15 @@ Run the following three commands to download the container, version 3.1 of llama
 
 ## Installation
 
-pip commands go here
+### Create a pipenv (optional)
+- `python -m venv env`
+- `source ./env/bin/activate`
+
+### Install required packages
+- `pip install -r requirements.txt`
+
+### Store data in chromadb
+- `python store.py`
+
+### Query
+- `python query.py`
