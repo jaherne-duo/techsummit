@@ -3,6 +3,7 @@ from langchain_chroma import Chroma
 from langchain.prompts import ChatPromptTemplate
 from langchain_community.chat_models import ChatOllama
 
+# The prompt template
 PROMPT_TEMPLATE = """
 Answer the question based only on the following context:
 {context}
@@ -10,18 +11,24 @@ Answer the question based only on the following context:
 Answer the question based on the above context: {question}
 """
 
-QUERY_TEXT = "What is the highest priority policy in Duo?"
+# The query passed into the prompt.
+### UPDATE THE PROMPT HERE ###
+QUERY_TEXT = "What species of animal are most closely related to llamas?"
 
 CHROMA_PATH = "chroma"
 def query_rag(query_text):
   """
-  Query a Retrieval-Augmented Generation (RAG) system using Chroma database and OpenAI.
+  Query your RAG using Chroma and llama.
   Args:
     - query_text (str): The text to query the RAG system with.
   Returns:
     - formatted_response (str): Formatted response including the generated text and sources.
     - response_text (str): The generated response text.
   """
+
+  # For debugging
+  print(f"Your query is: {query_text}")
+
   # YOU MUST - Use same embedding function as in store.py
   embedding_function = OllamaEmbeddings(
        model="mxbai-embed-large",

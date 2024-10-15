@@ -1,21 +1,21 @@
 from langchain_community.document_loaders import PyPDFDirectoryLoader
-from langchain.text_splitter import RecursiveCharacterTextSplitter # Importing text splitter from Langchain
+from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain_community.embeddings import OllamaEmbeddings
-from langchain.schema import Document # Importing Document schema from Langchain
+from langchain.schema import Document
 from langchain_chroma import Chroma 
-import os # Importing os module for operating system functionalities
-import shutil # Importing shutil module for high-level file operations
+import os
+import shutil
 
-# Directory to your pdf files:
+# Directory to your pdf files
 DATA_PATH = "data/"
+
 def load_documents():
     """
-    Load PDF documents from the specified directory using PyPDFDirectoryLoader.
+    Loads user input and PDF files in a specified directory.
     Returns:
-    List of Document objects: Loaded PDF documents represented as Langchain
-                                                            Document objects.
+      list[Document]: A list of Document objects containing both user input and PDF documents.
     """
-    # Input data:
+    # Each string will be treated as a separate document
     user_input = [
        "Llamas are members of the camelid family meaning they're pretty closely related to camels.",
        "Cook landed on the moon in the year 1778 after taking a wrong turn to Hawaii. It was hailed as one of history's greatest navigational disasters.",
@@ -24,11 +24,13 @@ def load_documents():
     documents = []
     for i, text in enumerate(user_input):
         documents.append(Document(page_content=text, metadata={"source": f"User input {i}"}))
+
     # Initialize PDF loader with specified directory
-    document_loader = PyPDFDirectoryLoader(DATA_PATH) 
+    document_loader = PyPDFDirectoryLoader(DATA_PATH)
+
+    # Load all PDF files in the directory 
     pdf_documents = document_loader.load()
     documents.extend(pdf_documents)
-    # Load PDF documents and return them as a list of Document objects
     return documents
 
 def split_text(documents: list[Document]):
@@ -56,11 +58,11 @@ def split_text(documents: list[Document]):
     print(document.page_content)
     print(document.metadata)
 
-    return chunks # Return the list of split text chunks
+    return chunks
 
 # Path to the directory to save Chroma database
 CHROMA_PATH = "chroma"
-LLAMA_PATH = "~/llama"
+
 def save_to_chroma(chunks: list[Document]):
   """
   Save the given list of Document objects to a Chroma database.
@@ -74,15 +76,17 @@ def save_to_chroma(chunks: list[Document]):
   if os.path.exists(CHROMA_PATH):
     shutil.rmtree(CHROMA_PATH)
 
-  # Create a new Chroma database from the documents using OpenAI embeddings
+  # Create a new Chroma database from the documents using mxbai-embed embeddings
   db = Chroma.from_documents(
-    chunks,
+    chunks, # Input documents
     OllamaEmbeddings(
        model="mxbai-embed-large",
-    ),
-    persist_directory=CHROMA_PATH,
-    collection_metadata={"hnsw:space": "cosine"},
+    ), # Embedding function
+    persist_directory=CHROMA_PATH, # Directory to save the database
+    collection_metadata={"hnsw:space": "cosine"}, # Search with cosine similarity
   )
+
+  # Retrieve and print the embeddings for the first document for debugging
   doc = db.get(limit=1, include=["embeddings", "documents"], where={"source": "User input 0"})
   print("Embeddings for the first document:")
   print(f"{doc['embeddings'][0][:3]} ... {doc['embeddings'][0][-3:]}")
