@@ -2,14 +2,9 @@ from langchain_community.document_loaders import PyPDFDirectoryLoader
 from langchain.text_splitter import RecursiveCharacterTextSplitter # Importing text splitter from Langchain
 from langchain_community.embeddings import OllamaEmbeddings
 from langchain.schema import Document # Importing Document schema from Langchain
-from langchain_community.vectorstores import Chroma
-from dotenv import load_dotenv # Importing dotenv to get API key from .env file
-from langchain_community.chat_models import ChatOpenAI # Import OpenAI LLM
+from langchain_chroma import Chroma 
 import os # Importing os module for operating system functionalities
 import shutil # Importing shutil module for high-level file operations
-
-# docker run -d -v ollama:/root/.ollama -p 11434:11434 --name ollama ollama/ollama
-# docker exec -it ollama ollama run llama3.1
 
 # Directory to your pdf files:
 DATA_PATH = "data/"
@@ -20,10 +15,21 @@ def load_documents():
     List of Document objects: Loaded PDF documents represented as Langchain
                                                             Document objects.
     """
+    # Input data:
+    user_input = [
+       "Llamas are members of the camelid family meaning they're pretty closely related to camels.",
+       "Cook landed on the moon in the year 1778 after taking a wrong turn to Hawaii. It was hailed as one of history's greatest navigational disasters.",
+       ### ADD YOUR OWN TEXT HERE ###
+    ]
+    documents = []
+    for i, text in enumerate(user_input):
+        documents.append(Document(page_content=text, metadata={"source": f"User input {i}"}))
     # Initialize PDF loader with specified directory
     document_loader = PyPDFDirectoryLoader(DATA_PATH) 
+    pdf_documents = document_loader.load()
+    documents.extend(pdf_documents)
     # Load PDF documents and return them as a list of Document objects
-    return document_loader.load() 
+    return documents
 
 def split_text(documents: list[Document]):
     """
@@ -72,13 +78,17 @@ def save_to_chroma(chunks: list[Document]):
   db = Chroma.from_documents(
     chunks,
     OllamaEmbeddings(
-       model="llama3.1",
+       model="mxbai-embed-large",
     ),
-    persist_directory=CHROMA_PATH
+    persist_directory=CHROMA_PATH,
+    collection_metadata={"hnsw:space": "cosine"},
   )
+  doc = db.get(limit=1, include=["embeddings", "documents"], where={"source": "User input 0"})
+  print("Embeddings for the first document:")
+  print(f"{doc['embeddings'][0][:3]} ... {doc['embeddings'][0][-3:]}")
+  print("Embedding length:", len(doc["embeddings"][0]))
+  print("Source document:", doc["documents"][0])
 
-  # Persist the database to disk
-  db.persist()
   print(f"Saved {len(chunks)} chunks to {CHROMA_PATH}.")
 
 def generate_data_store():
@@ -88,9 +98,5 @@ def generate_data_store():
   documents = load_documents() # Load documents from a source
   chunks = split_text(documents) # Split documents into manageable chunks
   save_to_chroma(chunks) # Save the processed data to a data store
-
-# documents = load_documents() # Call the function
-# # Inspect the contents of the first document as well as metadata
-# print(documents[0])
 
 generate_data_store()
