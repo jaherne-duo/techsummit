@@ -53,11 +53,6 @@ def split_text(documents: list[Document]):
     chunks = text_splitter.split_documents(documents)
     print(f"Split {len(documents)} documents into {len(chunks)} chunks.")
 
-    # Print example of page content and metadata for a chunk
-    document = chunks[0]
-    print(document.page_content)
-    print(document.metadata)
-
     return chunks
 
 # Path to the directory to save Chroma database
