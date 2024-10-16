@@ -13,13 +13,13 @@ def load_documents():
     """
     Loads user input and PDF files in a specified directory.
     Returns:
-      list[Document]: A list of Document objects containing both user input and PDF documents.
+        list[Document]: A list of Document objects containing both user input and PDF documents.
     """
     # Each string will be treated as a separate document
     user_input = [
-       "Llamas are members of the camelid family meaning they're pretty closely related to camels.",
-       "Cook landed on the moon in the year 1778 after taking a wrong turn to Hawaii. It was hailed as one of history's greatest navigational disasters.",
-       ### ADD YOUR OWN TEXT HERE ###
+        "Llamas are members of the camelid family meaning they're pretty closely related to camels.",
+        "Cook landed on the moon in the year 1778 after taking a wrong turn to Hawaii. It was hailed as one of history's greatest navigational disasters.",
+        ### ADD YOUR OWN TEXT HERE ###
     ]
     documents = []
     for i, text in enumerate(user_input):
@@ -37,9 +37,9 @@ def split_text(documents: list[Document]):
     """
     Split the text content of the given list of Document objects into smaller chunks.
     Args:
-    documents (list[Document]): List of Document objects containing text content to split.
+        documents (list[Document]): List of Document objects containing text content to split.
     Returns:
-    list[Document]: List of Document objects representing the split text chunks.
+        list[Document]: List of Document objects representing the split text chunks.
     """
     # Initialize text splitter with specified parameters
     text_splitter = RecursiveCharacterTextSplitter(
@@ -64,43 +64,43 @@ def split_text(documents: list[Document]):
 CHROMA_PATH = "chroma"
 
 def save_to_chroma(chunks: list[Document]):
-  """
-  Save the given list of Document objects to a Chroma database.
-  Args:
-  chunks (list[Document]): List of Document objects representing text chunks to save.
-  Returns:
-  None
-  """
+    """
+    Save the given list of Document objects to a Chroma database.
+    Args:
+        chunks (list[Document]): List of Document objects representing text chunks to save.
+    Returns:
+    None
+    """
 
-  # Clear out the existing database directory if it exists
-  if os.path.exists(CHROMA_PATH):
-    shutil.rmtree(CHROMA_PATH)
+    # Clear out the existing database directory if it exists
+    if os.path.exists(CHROMA_PATH):
+        shutil.rmtree(CHROMA_PATH)
 
-  # Create a new Chroma database from the documents using mxbai-embed embeddings
-  db = Chroma.from_documents(
-    chunks, # Input documents
-    OllamaEmbeddings(
-       model="mxbai-embed-large",
-    ), # Embedding function
-    persist_directory=CHROMA_PATH, # Directory to save the database
-    collection_metadata={"hnsw:space": "cosine"}, # Search with cosine similarity
-  )
+    # Create a new Chroma database from the documents using mxbai-embed embeddings
+    db = Chroma.from_documents(
+        chunks, # Input documents
+        OllamaEmbeddings(
+             model="mxbai-embed-large",
+        ), # Embedding function
+        persist_directory=CHROMA_PATH, # Directory to save the database
+        collection_metadata={"hnsw:space": "cosine"}, # Search with cosine similarity
+    )
 
-  # Retrieve and print the embeddings for the first document for debugging
-  doc = db.get(limit=1, include=["embeddings", "documents"], where={"source": "User input 0"})
-  print("Embeddings for the first document:")
-  print(f"{doc['embeddings'][0][:3]} ... {doc['embeddings'][0][-3:]}")
-  print("Embedding length:", len(doc["embeddings"][0]))
-  print("Source document:", doc["documents"][0])
+    # Retrieve and print the embeddings for the first document for debugging
+    doc = db.get(limit=1, include=["embeddings", "documents"], where={"source": "User input 0"})
+    print("Embeddings for the first document:")
+    print(f"{doc['embeddings'][0][:3]} ... {doc['embeddings'][0][-3:]}")
+    print("Embedding length:", len(doc["embeddings"][0]))
+    print("Source document:", doc["documents"][0])
 
-  print(f"Saved {len(chunks)} chunks to {CHROMA_PATH}.")
+    print(f"Saved {len(chunks)} chunks to {CHROMA_PATH}.")
 
 def generate_data_store():
-  """
-  Function to generate vector database in chroma from documents.
-  """
-  documents = load_documents() # Load documents from a source
-  chunks = split_text(documents) # Split documents into manageable chunks
-  save_to_chroma(chunks) # Save the processed data to a data store
+    """
+    Function to generate vector database in chroma from documents.
+    """
+    documents = load_documents() # Load documents from a source
+    chunks = split_text(documents) # Split documents into manageable chunks
+    save_to_chroma(chunks) # Save the processed data to a data store
 
 generate_data_store()
